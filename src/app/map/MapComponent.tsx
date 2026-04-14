@@ -1,9 +1,19 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
+
+// Sửa lỗi Icon mặc định của Leaflet khi build Next.js
+if (typeof window !== 'undefined') {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+  });
+}
 
 const sites = [
   { id: 1, nameVi: "Làng Sen (Quê Nội)", nameEn: "Sen Village", pos: [18.675, 105.567] as [number, number], img: "https://vnanet.vn/Data/Articles/2021/05/19/5571407/04163459.jpg", descVi: "Ngôi nhà tranh đơn sơ nơi Bác sống thời niên thiếu.", descEn: "The childhood home of President Ho Chi Minh.", audioVi: "Chào mừng bạn đến với Làng Sen quê nội.", audioEn: "Welcome to Sen Village, the paternal home of Uncle Ho." },
@@ -13,17 +23,17 @@ const sites = [
 
 const RoutingMachine = () => {
   const map = useMap();
+  const routingControlRef = useRef<any>(null); // Sử dụng useRef để quản lý routing
 
   useEffect(() => {
     if (!map || typeof window === "undefined") return;
-
-    let routingControl: any = null; // Khai báo biến để quản lý lộ trình
 
     try {
       const L_any = L as any;
       require('leaflet-routing-machine');
 
-      routingControl = L_any.Routing.control({
+      // Khởi tạo và lưu vào ref
+      routingControlRef.current = L_any.Routing.control({
         waypoints: [
           L.latLng(sites[1].pos), // Hoàng Trù
           L.latLng(sites[0].pos), // Làng Sen
@@ -41,11 +51,12 @@ const RoutingMachine = () => {
       console.error("Lỗi khởi tạo lộ trình:", e);
     }
 
-    // KHẮC PHỤC LỖI "null" TẠI ĐÂY:
+    // Dọn dẹp an toàn khi rời trang
     return () => {
-      if (map && routingControl) {
+      if (map && routingControlRef.current) {
         try { 
-          map.removeControl(routingControl); 
+          map.removeControl(routingControlRef.current); 
+          routingControlRef.current = null;
         } catch (e) { 
           console.log("Dọn dẹp bản đồ an toàn"); 
         }
@@ -95,10 +106,7 @@ export default function MapComponent() {
           <TileLayer url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}" />
           <RoutingMachine />
           {sites.map((site) => (
-            <Marker key={site.id} position={site.pos} icon={new L.Icon({
-                iconUrl: 'https://cdn-icons-png.flaticon.com/512/684/684908.png',
-                iconSize: [32, 32],
-            })}>
+            <Marker key={site.id} position={site.pos}>
               <Popup>
                 <div className="w-[260px] p-1 font-sans text-slate-900">
                   <img src={site.img} alt={site.nameVi} className="w-full h-32 object-cover rounded-lg mb-2 shadow-sm" />
