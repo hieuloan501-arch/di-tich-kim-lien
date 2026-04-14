@@ -5,7 +5,7 @@ import 'leaflet/dist/leaflet.css';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 
-// Sửa lỗi Icon mặc định của Leaflet khi build Next.js
+// Sửa lỗi hiển thị Marker trên Next.js
 if (typeof window !== 'undefined') {
   delete (L.Icon.Default.prototype as any)._getIconUrl;
   L.Icon.Default.mergeOptions({
@@ -23,42 +23,53 @@ const sites = [
 
 const RoutingMachine = () => {
   const map = useMap();
-  const routingControlRef = useRef<any>(null); // Sử dụng useRef để quản lý routing
+  const routingControlRef = useRef<any>(null);
 
   useEffect(() => {
     if (!map || typeof window === "undefined") return;
 
-    try {
-      const L_any = L as any;
-      require('leaflet-routing-machine');
+    // Load thư viện routing chỉ ở phía Client
+    const setupRouting = async () => {
+      try {
+        const L_any = L as any;
+        // Kiểm tra nếu chưa load thư viện thì mới require
+        if (!L_any.Routing) {
+          require('leaflet-routing-machine');
+        }
 
-      // Khởi tạo và lưu vào ref
-      routingControlRef.current = L_any.Routing.control({
-        waypoints: [
-          L.latLng(sites[1].pos), // Hoàng Trù
-          L.latLng(sites[0].pos), // Làng Sen
-          L.latLng(sites[2].pos)  // Mộ bà Loan
-        ],
-        lineOptions: {
-          styles: [{ color: '#facc15', weight: 6, opacity: 0.9 }]
-        },
-        addWaypoints: false,
-        draggableWaypoints: false,
-        show: false, 
-        createMarker: () => null
-      }).addTo(map);
-    } catch (e) {
-      console.error("Lỗi khởi tạo lộ trình:", e);
-    }
+        // Nếu đã có lộ trình cũ thì xóa đi trước khi tạo mới
+        if (routingControlRef.current) {
+          map.removeControl(routingControlRef.current);
+        }
 
-    // Dọn dẹp an toàn khi rời trang
+        routingControlRef.current = L_any.Routing.control({
+          waypoints: [
+            L.latLng(sites[1].pos),
+            L.latLng(sites[0].pos),
+            L.latLng(sites[2].pos)
+          ],
+          lineOptions: {
+            styles: [{ color: '#facc15', weight: 6, opacity: 0.9 }]
+          },
+          addWaypoints: false,
+          draggableWaypoints: false,
+          show: false,
+          createMarker: () => null
+        }).addTo(map);
+      } catch (e) {
+        console.error("Lỗi Routing:", e);
+      }
+    };
+
+    setupRouting();
+
     return () => {
       if (map && routingControlRef.current) {
-        try { 
-          map.removeControl(routingControlRef.current); 
+        try {
+          map.removeControl(routingControlRef.current);
           routingControlRef.current = null;
-        } catch (e) { 
-          console.log("Dọn dẹp bản đồ an toàn"); 
+        } catch (e) {
+          console.log("Cleanup safe");
         }
       }
     };
@@ -72,7 +83,10 @@ export default function MapComponent() {
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
-    const loadVoices = () => setVoices(window.speechSynthesis.getVoices());
+    const loadVoices = () => {
+      const availableVoices = window.speechSynthesis.getVoices();
+      if (availableVoices.length > 0) setVoices(availableVoices);
+    };
     loadVoices();
     window.speechSynthesis.onvoiceschanged = loadVoices;
   }, []);
