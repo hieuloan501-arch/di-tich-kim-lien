@@ -132,7 +132,7 @@ export default function Home() {
                 <label className="block text-xs font-bold text-stone-500 uppercase mb-2">Lời kể / Mô tả tư liệu</label>
                 <textarea required rows={4} className="w-full p-4 rounded-2xl bg-stone-100 border-none focus:ring-2 focus:ring-green-500 outline-none" placeholder="Chia sẻ kỷ niệm hoặc thông tin về bức ảnh/hiện vật bạn gửi..."></textarea>
               </div>
-
+ 
               <div className="relative border-2 border-dashed border-stone-200 rounded-3xl p-10 text-center hover:bg-green-50 transition-colors group">
                 <input 
                   type="file" 
