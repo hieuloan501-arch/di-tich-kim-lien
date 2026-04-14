@@ -2,34 +2,32 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 1. Xóa bỏ hoàn toàn phần :root cũ nếu nó gây lỗi */
 :root {
-  --background: #020617; /* Màu Slate-950 */
+  --background: #020617;
   --foreground: #ffffff;
 }
 
-/* 2. Chỉ dùng 1 selector body duy nhất */
 body {
-  background-color: var(--background);
+  background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
 }
 
-/* 3. Sửa lỗi bản đồ Leaflet */
+/* Fix lỗi bản đồ */
 .leaflet-container {
-  width: 100%;
-  height: 100%;
+  width: 100% !important;
+  height: 100% !important;
   background: #020617 !important;
+  z-index: 1;
 }
 
-/* Ngăn ảnh bản đồ bị lỗi kích thước */
 .leaflet-container img {
   max-width: none !important;
+  display: block;
 }
 
-/* Màu chữ trong Popup để dễ đọc */
 .leaflet-popup-content-wrapper {
   color: #000000 !important;
 }
