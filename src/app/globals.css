@@ -1,33 +1,29 @@
+/* Sử dụng các quy tắc Tailwind chuẩn */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: #020617;
+  /* Định nghĩa lại biến màu sắc chuẩn để body không bị trắng */
+  --background: #020617; 
   --foreground: #ffffff;
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background) !important;
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
 }
 
-/* Fix lỗi bản đồ */
+/* Sửa lỗi hiển thị bản đồ để không bị vỡ khung */
 .leaflet-container {
-  width: 100% !important;
-  height: 100% !important;
+  width: 100%;
+  height: 100%;
   background: #020617 !important;
-  z-index: 1;
 }
 
 .leaflet-container img {
   max-width: none !important;
-  display: block;
-}
-
-.leaflet-popup-content-wrapper {
-  color: #000000 !important;
 }
